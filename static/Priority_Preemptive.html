@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Priority Preemptive</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="header-container"></div>
+    <div id="top">
+        <h2>Task List</h2>
+        <div class="task-list" id="tasks">
+            <!-- Task items will be dynamically added here -->
+        </div>
+        <button id="add-task">Add Task</button>
+        <button id="simulate">Simulate</button>
+    </div>
+
+    <div id="bottom">
+        <div id="bottom-top">
+            <h3>Bottom Top</h3>
+            <p>Content for the top part of the bottom section.</p>
+        </div>
+        <div id="bottom-bottom">
+            <div>
+                <h3>Bottom Left</h3>
+                <p>Content for the left side of the bottom section.</p>
+            </div>
+            <div>
+                <h3>Bottom Right</h3>
+                <p>Content for the right side of the bottom section.</p>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        const tasksContainer = document.getElementById("tasks");
+        const addTaskButton = document.getElementById("add-task");
+        const simulateButton = document.getElementById("simulate");
+
+        let taskId = 1; // Auto-increment task ID
+
+        // Function to add a new task
+        addTaskButton.addEventListener("click", () => {
+            const taskDiv = document.createElement("div");
+            taskDiv.className = "task";
+
+            // ID Input
+            const idInput = document.createElement("input");
+            idInput.type = "number";
+            idInput.placeholder = "ID";
+            idInput.value = taskId++; // Auto-fill ID
+
+            // Burst Time Input
+            const burstTimeInput = document.createElement("input");
+            burstTimeInput.type = "number";
+            burstTimeInput.placeholder = "Burst Time";
+
+            // Arrival Time Input
+            const arrivalTimeInput = document.createElement("input");
+            arrivalTimeInput.type = "number";
+            arrivalTimeInput.placeholder = "Arrival Time";
+
+            // Priority Input
+            const priorityInput = document.createElement("input");
+            priorityInput.type = "number";
+            priorityInput.placeholder = "Priority";
+
+            // Delete Button
+            const deleteButton = document.createElement("button");
+            deleteButton.textContent = "Delete";
+            deleteButton.addEventListener("click", () => {
+                tasksContainer.removeChild(taskDiv);
+            });
+
+            // Append inputs and button to taskDiv
+            taskDiv.appendChild(idInput);
+            taskDiv.appendChild(burstTimeInput);
+            taskDiv.appendChild(arrivalTimeInput);
+            taskDiv.appendChild(priorityInput);
+            taskDiv.appendChild(deleteButton);
+
+            // Append taskDiv to tasksContainer
+            tasksContainer.appendChild(taskDiv);
+        });
+
+        // Simulate button click event
+        simulateButton.addEventListener("click", () => {
+            const tasks = Array.from(document.querySelectorAll(".task")).map(task => ({
+                id: parseInt(task.children[0].value),
+                burst_time: parseInt(task.children[1].value),
+                arrival_time: parseInt(task.children[2].value),
+                priority: parseInt(task.children[3].value)
+            }));
+
+            console.log("Tasks:", tasks);
+            // You can now use the tasks array for further processing
+        });
+    </script>
+
+    <script src="script.js"></script>
+</body>
+</html>

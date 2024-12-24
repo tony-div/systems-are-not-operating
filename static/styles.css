@@ -1,0 +1,209 @@
+    /* General Reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+      /* Image Section */
+    .image-section {
+      flex-grow: 1;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px;
+    }
+
+    .image-section h1 {
+      font-size: 3rem;
+      font-weight: bold;
+      background: rgba(0, 0, 0, 0.5); /* Semi-transparent background for text */
+      padding: 1rem 2rem;
+      border-radius: 8px;
+    }
+      
+    body {
+      font-family: Tahoma, Arial, sans-serif; /* Updated font family */
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh; /* Ensure the body takes up the full height of the viewport */
+      background: linear-gradient(to right, #8f94fb, #4e54c8);
+      background-size: cover;
+      color: white;
+      justify-content: space-between; /* This ensures the footer stays at the bottom */
+    }
+      
+      /* Navigation Bar */
+    nav {
+      background: linear-gradient(to right, #8f94fb, #4e54c8);
+      padding: 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    }
+      
+    nav a {
+      color: #fff;
+      text-decoration: none;
+      margin: 0 1rem;
+      font-weight: bold;
+      transition: color 0.3s;
+    }
+
+    nav a:hover {
+      color: #ffccff; /* Light pink hover color */
+    }
+
+      /* Loan Prediction Form */
+    .loan-prediction-form {
+      background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent background for form */
+      padding: 20px;
+      margin: 20px auto;
+      border-radius: 10px;
+      max-width: 500px;
+      width: 100%;
+      position: relative;
+      margin-top: 0vh;
+      margin-bottom: 4vh;
+      display: flex;
+      flex-direction: column;
+      gap: 15px; /* Space between form groups */
+    }
+
+
+    .loan-prediction-form .form-group {
+      display: flex;
+      flex-wrap: nowrap; /* Prevent wrapping */
+      align-items: center; /* Align vertically */
+      gap: 15px; /* Spacing between items */
+    }
+
+
+    .loan-prediction-form .form-group label {
+      flex: 0 0 150px; /* Fixed width for labels */
+      font-size: 1rem;
+      margin-right: 10px;
+      text-align: left; /* Ensure text alignment */
+    }
+        
+    .loan-prediction-form .form-group input {
+      flex: 7;
+      padding: 8px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    
+    .loan-prediction-form .form-group span {
+      color: #ccc;
+      font-size: 0.85rem;
+      margin-top: 5px;
+    }
+
+    input::placeholder {
+      color: #999999; /* Light gray color for ghostly effect */
+      font-style: italic; /* Optional: gives it a softer, ghostly feel */
+      opacity: 1; /* Ensures placeholder text is fully visible */
+      font-size: 0.8em; /* Smaller text size */
+    }
+
+    .loan-prediction-form button {
+      margin-top: 10px;
+      margin-bottom: 10px;
+      padding: 10px;
+      background-color: #4e54c8;
+      color: white;
+      border: none;
+      cursor: pointer;
+      width: 100%;
+      font-size: 1rem;
+    }
+
+    .loan-prediction-form .form-group .radio-group span {
+      margin-right: 0; /* Reset margin for better alignment */
+      display: flex;
+      align-items: center;
+    }
+
+    .loan-prediction-form .form-group .radio-group span:last-child {
+      margin-right: 0; /* Avoid extra margin on the last item */
+    }
+    
+    .loan-prediction-form .form-group input[type="radio"] {
+      margin-right: 5px; /* Space between the button and label text */
+    }
+
+    .loan-prediction-form button:hover {
+      background-color: #8f94fb;
+    }
+
+    /* Footer */
+    footer {
+      background: linear-gradient(to right, #4e54c8, #8f94fb);
+      color: #fff;
+      text-align: center;
+      padding: 1rem;
+      box-shadow: 0px -4px 8px rgba(0, 0, 0, 0.2);
+      margin-top: 15px; /* Pushes footer to the bottom of the page */
+    }
+
+
+    footer p {
+      font-size: 1rem;
+    }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* Top container for tasks */
+        #top {
+            flex: 1;
+            background-color: #a1a1a1;
+            padding: 20px;
+            border-bottom: 2px solid #ccc;
+            overflow-y: auto;
+        }
+
+        /* Bottom container */
+        #bottom {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top half of bottom container */
+        #bottom-top {
+            flex: 1;
+            background-color: #707070;
+            padding: 20px;
+            border-bottom: 2px solid #ccc;
+        }
+
+        /* Bottom half split into two side-by-side */
+        #bottom-bottom {
+            flex: 1;
+            display: flex;
+        }
+
+        #bottom-bottom > div {
+            flex: 1;
+            padding: 20px;
+            border-right: 2px solid #ccc;
+            background-color: #8a8a8a;
+        }
+
+        #bottom-bottom > div:last-child {
+            border-right: none; /* Remove border from the last column */
+        }
+      
+      
