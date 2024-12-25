@@ -5,9 +5,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Preemptive SJF</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        #visualization {
+            display: flex;
+            margin-top: 20px;
+            height: 50px;
+            border: 1px solid #ccc;
+            position: relative;
+            background-color: #f9f9f9;
+        }
+        .task-interval {
+            height: 100%;
+            text-align: center;
+            line-height: 50px;
+            font-size: 12px;
+            overflow: hidden;
+            white-space: nowrap;
+            position: absolute;
+            border-right: 1px solid #000; /* Add a border to distinguish tasks */
+            background-color: #ffffff; /* Keep tasks white */
+            color: black;
+            box-sizing: border-box;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #000000;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #3f3f3f;
+        }
+
+        #average-times {
+            margin-top: 20px;
+            font-size: 16px;
+        }
+        #average-times p {
+            margin: 5px 0;
+        }
+    </style>
 </head>
 <body>
     <div id="header-container"></div>
+
     <div id="top">
         <h2>Task List</h2>
         <div class="task-list" id="tasks">
@@ -21,15 +67,35 @@
         <div id="bottom-top">
             <h3>Bottom Top</h3>
             <p>Content for the top part of the bottom section.</p>
+            <h3>Timeline Visualization</h3>
+            <div id="visualization">
+                <!-- Task intervals will be drawn here -->
+            </div>
         </div>
         <div id="bottom-bottom">
             <div>
-                <h3>Bottom Left</h3>
-                <p>Content for the left side of the bottom section.</p>
+                <h3>Task Times</h3>
+            <table id="task-times">
+                <thead>
+                    <tr>
+                        <th>Task ID</th>
+                        <th>Wait Time</th>
+                        <th>Response Time</th>
+                        <th>Turnaround Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Task times will be dynamically added here -->
+                </tbody>
+            </table>
             </div>
             <div>
-                <h3>Bottom Right</h3>
-                <p>Content for the right side of the bottom section.</p>
+                <div id="average-times">
+                    <h3>Average Times</h3>
+                    <p>Average Wait Time: <span id="avg-wait-time">0</span></p>
+                    <p>Average Response Time: <span id="avg-response-time">0</span></p>
+                    <p>Average Turnaround Time: <span id="avg-turnaround-time">0</span></p>
+                </div>
             </div>
         </div>
     </div>
@@ -38,6 +104,8 @@
         const tasksContainer = document.getElementById("tasks");
         const addTaskButton = document.getElementById("add-task");
         const simulateButton = document.getElementById("simulate");
+        const visualizationContainer = document.getElementById("visualization");
+        const taskTimesTableBody = document.getElementById("task-times").querySelector("tbody");
 
         let taskId = 1; // Auto-increment task ID
 
@@ -79,16 +147,58 @@
             tasksContainer.appendChild(taskDiv);
         });
 
-        // Simulate button click event
-        simulateButton.addEventListener("click", () => {
-            const tasks = Array.from(document.querySelectorAll(".task")).map(task => ({
-                id: parseInt(task.children[0].value),
-                burst_time: parseInt(task.children[1].value),
-                arrival_time: parseInt(task.children[2].value)
-            }));
+        // Function to draw the timeline visualization
+        function drawVisualization(chart) {
+            visualizationContainer.innerHTML = ""; // Clear previous visualization
+            const totalTime = chart[chart.length - 1].interval[1]; // Get the total time
 
-            console.log("Tasks:", tasks);
-            // You can now use the tasks array for further processing
+            chart.forEach((task) => {
+                const intervalWidth = ((task.interval[1] - task.interval[0]) / totalTime) * 100;
+
+                const taskDiv = document.createElement("div");
+                taskDiv.className = "task-interval";
+                taskDiv.style.width = `${intervalWidth}%`;
+                taskDiv.style.left = `${(task.interval[0] / totalTime) * 100}%`;
+                taskDiv.textContent = `${task.name} (${task.interval[0]} - ${task.interval[1]})`;
+
+                visualizationContainer.appendChild(taskDiv);
+            });
+        }
+
+        // Function to calculate and update times in the table
+        function updateTaskTimes(chart) {
+            taskTimesTableBody.innerHTML = ""; // Clear existing times
+
+            chart.forEach((task) => {
+                const waitTime = task.startTime - task.arrivalTime; // Wait Time = Start Time - Arrival Time
+                const turnaroundTime = task.finishTime - task.arrivalTime; // Turnaround Time = Finish Time - Arrival Time
+                const responseTime = task.startTime - task.arrivalTime; // Response Time = Start Time - Arrival Time
+
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${task.name}</td>
+                    <td>${waitTime}</td>
+                    <td>${responseTime}</td>
+                    <td>${turnaroundTime}</td>
+                `;
+                taskTimesTableBody.appendChild(row);
+            });
+        }
+
+        // Simulate button click event
+        simulateButton.addEventListener("click", async () => {
+            // Simulate fetching data from an API
+            const response = {
+                chart: [
+                    { name: "1", interval: [0, 1], startTime: 0, finishTime: 1, arrivalTime: 0 },
+                    { name: "2", interval: [1, 5], startTime: 1, finishTime: 5, arrivalTime: 1 },
+                    { name: "3", interval: [5, 12], startTime: 5, finishTime: 12, arrivalTime: 5 },
+                    { name: "4", interval: [12, 14], startTime: 12, finishTime: 14, arrivalTime: 12 }
+                ]
+            };
+
+            drawVisualization(response.chart);
+            updateTaskTimes(response.chart);
         });
     </script>
     <script src="script.js"></script>
