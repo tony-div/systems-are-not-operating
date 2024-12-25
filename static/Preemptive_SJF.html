@@ -142,7 +142,7 @@
         }
 
         // Function to calculate and update task times in the table
-        function updateTaskTimes(chart) {
+        function updateTaskTimes(processes, turnaround_time, waiting_time, response_time) {
             taskTimesTableBody.innerHTML = "";
 
             let totalWaitTime = 0;
@@ -150,28 +150,23 @@
             let totalTurnaroundTime = 0;
 
             // Make sure we calculate the times for the correct chart (which should be the final processed order)
-            chart.forEach((task, index) => {
-                const waitTime = task.startTime - task.arrivalTime;
-                const turnaroundTime = task.finishTime - task.arrivalTime;
-                const responseTime = task.startTime - task.arrivalTime;
-
-                totalWaitTime += waitTime;
-                totalResponseTime += responseTime;
-                totalTurnaroundTime += turnaroundTime;
-
+            for(let index = 0; index < processes.length; index++) {
                 // Update the table with calculated times for each task
+                totalWaitTime += waiting_time[index];
+                totalResponseTime += response_time[index];
+                totalTurnaroundTime += turnaround_time[index];
                 const row = document.createElement("tr");
                 row.innerHTML = `
-                    <td>${task.id}</td>
-                    <td>${waitTime}</td>
-                    <td>${responseTime}</td>
-                    <td>${turnaroundTime}</td>
+                    <td>${processes[index]}</td>
+                    <td>${waiting_time[index]}</td>
+                    <td>${response_time[index]}</td>
+                    <td>${turnaround_time[index]}</td>
                 `;
                 taskTimesTableBody.appendChild(row);
-            });
+            };
 
             // Calculate averages
-            const numTasks = chart.length;
+            const numTasks = processes.length;
             avgWaitTimeSpan.textContent = (totalWaitTime / numTasks).toFixed(2);
             avgResponseTimeSpan.textContent = (totalResponseTime / numTasks).toFixed(2);
             avgTurnaroundTimeSpan.textContent = (totalTurnaroundTime / numTasks).toFixed(2);
@@ -181,7 +176,7 @@
         simulateButton.addEventListener("click", async () => {
             const processes = handleTasks();  // Get current processes based on user input
 
-            try {
+            // try {
                 const response = await fetch("/api/simulate/sjf/preemptive", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -197,11 +192,11 @@
 
                 // Draw the visualization and update task times
                 drawVisualization(result.chart);
-                updateTaskTimes(result.chart);
-            } catch (error) {
-                console.error("Error:", error);
-                alert("An error occurred during simulation.");
-            }
+                updateTaskTimes(result.processes, result.turnaround_time, result.waiting_time, result.response_time);
+            // } catch (error) {
+                // console.error("Error:", error);
+                // alert("An error occurred during simulation.");
+            // }
         });
     </script>
     <script src="script.js"></script>
