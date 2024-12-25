@@ -29,30 +29,34 @@ def test(processes: ProcessList):
 
 @app.post("/api/simulate/sjf/non-preemptive")
   # [arrival time, burst time, process id]
-def test(processes: ProcessList):
+def sjf_non_preemptive(processes: ProcessList):
   process_list = []
   for process in processes.processes:
     process_list.append([process.arrival_time, process.burst_time, process.id])
   results = Schedulers.simulate(algo_name="SJF_non_preemptive", processes_list=process_list)
-  print(results)
-  return {"results": results}
+  return results
 
 @app.post("/api/simulate/sjf/preemptive")
-def test(processes: ProcessList):
+def sjf_preemptive(processes: ProcessList):
   return {"status": "not implemented yet"}
 
 @app.post("/api/simulate/fcfs")
-def test(processes: ProcessList):
-  return {"status": "not implemented yet"}
+  # [arrival time, burst time, proccess id]
+def fcfs(processes: ProcessList):
+  process_list = []
+  for process in processes.processes:
+    process_list.append([process.arrival_time, process.burst_time, process.id])
+  results = Schedulers.simulate(algo_name="fcfs", processes_list=process_list)
+  return results
 
 @app.post("/api/simulate/round-robin")
-def test(processes: ProcessList):
+def round_robin(processes: ProcessList):
   return {"status": "not implemented yet"}
 
 @app.post("/api/simulate/priority/non-preemptive")
-def test(processes: ProcessList):
+def priority_non_preemptive(processes: ProcessList):
   return {"status": "not implemented yet"}
 
 @app.post("/api/simulate/priority/preemptive")
-def test(processes: ProcessList):
+def priority_preemptive(processes: ProcessList):
   return {"status": "not implemented yet"}
