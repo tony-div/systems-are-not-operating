@@ -8,60 +8,83 @@
 </head>
 <body>
     <div id="header-container"></div>
+
     <div id="top">
-        <h2>Task List</h2>
+        <h2>Process List - Priority Preemptive</h2>
+        <button id="add-task">Add Task</button>
+        <button id="simulate">Simulate</button>
         <div class="task-list" id="tasks">
             <!-- Task items will be dynamically added here -->
         </div>
-        <button id="add-task">Add Task</button>
-        <button id="simulate">Simulate</button>
     </div>
 
     <div id="bottom">
         <div id="bottom-top">
-            <h3>Bottom Top</h3>
-            <p>Content for the top part of the bottom section.</p>
+            <h3>Timeline Visualization</h3>
+            <div id="visualization">
+                <!-- Task intervals will be drawn here -->
+            </div>
         </div>
         <div id="bottom-bottom">
             <div>
-                <h3>Bottom Left</h3>
-                <p>Content for the left side of the bottom section.</p>
+                <h3>Process Times</h3>
+                <table id="task-times">
+                    <thead>
+                        <tr>
+                            <th>Process ID</th>
+                            <th>Wait Time</th>
+                            <th>Response Time</th>
+                            <th>Turnaround Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Process times will be dynamically added here -->
+                    </tbody>
+                </table>
             </div>
             <div>
-                <h3>Bottom Right</h3>
-                <p>Content for the right side of the bottom section.</p>
+                <div id="average-times">
+                    <h3>Average Times</h3>
+                    <p>Average Wait Time: <span id="avg-wait-time">0</span></p>
+                    <p>Average Response Time: <span id="avg-response-time">0</span></p>
+                    <p>Average Turnaround Time: <span id="avg-turnaround-time">0</span></p>
+                </div>
             </div>
         </div>
     </div>
-
 
     <script>
         const tasksContainer = document.getElementById("tasks");
         const addTaskButton = document.getElementById("add-task");
         const simulateButton = document.getElementById("simulate");
+        const visualizationContainer = document.getElementById("visualization");
+        const taskTimesTableBody = document.getElementById("task-times").querySelector("tbody");
+        const avgWaitTimeElement = document.getElementById("avg-wait-time");
+        const avgResponseTimeElement = document.getElementById("avg-response-time");
+        const avgTurnaroundTimeElement = document.getElementById("avg-turnaround-time");
 
         let taskId = 1; // Auto-increment task ID
 
-        // Function to add a new task
+        // Function to add a new task input form
         addTaskButton.addEventListener("click", () => {
             const taskDiv = document.createElement("div");
-            taskDiv.className = "task";
+            taskDiv.className = "task-inputs";
 
-            // ID Input
+            // Process ID (Editable)
             const idInput = document.createElement("input");
-            idInput.type = "number";
-            idInput.placeholder = "ID";
-            idInput.value = taskId++; // Auto-fill ID
+            idInput.type = "text";
+            idInput.value = taskId++; // Initial value based on current taskId
 
             // Burst Time Input
             const burstTimeInput = document.createElement("input");
             burstTimeInput.type = "number";
             burstTimeInput.placeholder = "Burst Time";
 
-            // Arrival Time Input
+            // Arrival Time Input (defaults to 0)
             const arrivalTimeInput = document.createElement("input");
             arrivalTimeInput.type = "number";
             arrivalTimeInput.placeholder = "Arrival Time";
+            arrivalTimeInput.value = 0;  // Default value set to 0
 
             // Priority Input
             const priorityInput = document.createElement("input");
@@ -71,11 +94,12 @@
             // Delete Button
             const deleteButton = document.createElement("button");
             deleteButton.textContent = "Delete";
+            deleteButton.classList.add("delete-button");
             deleteButton.addEventListener("click", () => {
                 tasksContainer.removeChild(taskDiv);
             });
 
-            // Append inputs and button to taskDiv
+            // Append inputs and delete button to taskDiv
             taskDiv.appendChild(idInput);
             taskDiv.appendChild(burstTimeInput);
             taskDiv.appendChild(arrivalTimeInput);
@@ -87,17 +111,103 @@
         });
 
         // Simulate button click event
-        simulateButton.addEventListener("click", () => {
-            const tasks = Array.from(document.querySelectorAll(".task")).map(task => ({
-                id: parseInt(task.children[0].value),
-                burst_time: parseInt(task.children[1].value),
-                arrival_time: parseInt(task.children[2].value),
-                priority: parseInt(task.children[3].value)
-            }));
+        simulateButton.addEventListener("click", async () => {
+            const tasks = Array.from(tasksContainer.children).map((taskDiv) => {
+                const inputs = taskDiv.querySelectorAll("input");
+                const [idInput, burstTimeInput, arrivalTimeInput, priorityInput] = inputs;
+                return {
+                    id: parseInt(idInput.value),
+                    burst_time: parseInt(burstTimeInput.value),
+                    arrival_time: parseInt(arrivalTimeInput.value),
+                    priority: parseInt(priorityInput.value),
+                };
+            });
 
             console.log("Tasks:", tasks);
-            // You can now use the tasks array for further processing
+
+            // Send data to backend
+            const response = await fetch("/api/simulate/priority/preemptive", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ processes: tasks }),
+            });
+
+            const data = await response.json();
+
+            console.log("Backend response data:", data);  // Log response data for debugging
+
+            if (!data || !data.chart) {
+                console.error("Invalid data from backend:", data);
+                return;  // Avoid continuing if data is invalid
+            }
+
+            // Draw the visualization
+            drawVisualization(data.chart);
+
+            // Update process times in the table
+            updateProcessTimes(data);
+
+            // Update average times
+            updateAverageTimes(data);
         });
+
+        // Function to draw the timeline visualization
+        function drawVisualization(chart) {
+            visualizationContainer.innerHTML = ""; // Clear previous visualization
+
+            if (chart.length === 0) {
+                return; // No data to visualize
+            }
+
+            const totalTime = chart[chart.length - 1].interval[1]; // Get the total time based on the last process's finish time
+
+            chart.forEach((task) => {
+                const intervalWidth = ((task.interval[1] - task.interval[0]) / totalTime) * 100;
+                const intervalLeft = (task.interval[0] / totalTime) * 100;
+
+                const taskDiv = document.createElement("div");
+                taskDiv.className = "task-interval";
+                taskDiv.style.width = `${intervalWidth}%`;
+                taskDiv.style.left = `${intervalLeft}%`;
+                taskDiv.textContent = `${task.name} (${task.interval[0]} - ${task.interval[1]})`;
+
+                visualizationContainer.appendChild(taskDiv);
+            });
+        }
+
+        // Function to calculate and update process times in the table
+        function updateProcessTimes(data) {
+            taskTimesTableBody.innerHTML = ""; // Clear existing times
+
+            if (!data.processes || data.processes.length === 0) {
+                console.error("No processes data available.");
+                return;
+            }
+
+            data.processes.forEach((processId, index) => {
+                const waitTime = data.waiting_time[index];
+                const turnaroundTime = data.turnaround_time[index];
+                const responseTime = data.response_time[index];
+
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${processId}</td>
+                    <td>${waitTime}</td>
+                    <td>${responseTime}</td>
+                    <td>${turnaroundTime}</td>
+                `;
+                taskTimesTableBody.appendChild(row);
+            });
+        }
+
+        // Function to update the average times
+        function updateAverageTimes(data) {
+            avgWaitTimeElement.textContent = data.avg_waiting_time;
+            avgResponseTimeElement.textContent = data.avg_response_time;
+            avgTurnaroundTimeElement.textContent = data.avg_turnaround_time;
+        }
     </script>
 
     <script src="script.js"></script>
