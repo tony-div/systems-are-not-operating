@@ -5,49 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FCFS</title>
     <link rel="stylesheet" href="styles.css">
-    <style>
-        #visualization {
-            display: flex;
-            margin-top: 20px;
-            height: 50px;
-            border: 1px solid #ccc;
-            position: relative;
-            background-color: #f9f9f9;
-        }
-
-        .task-interval {
-            height: 100%;
-            text-align: center;
-            line-height: 50px;
-            font-size: 12px;
-            overflow: hidden;
-            white-space: nowrap;
-            position: absolute;
-            background-color: #4CAF50;
-            color: white;
-            box-sizing: border-box;
-            border-right: 1px solid #000; /* Border between tasks */
-        }
-
-        .task-inputs {
-            margin-bottom: 10px;
-        }
-
-        .delete-button {
-            margin-left: 10px;
-        }
-    </style>
+    
 </head>
 <body>
     <div id="header-container"></div>
 
     <div id="top">
         <h2>Process List</h2>
+        <button id="add-task">Add Task</button>
+        <button id="simulate">Simulate</button>
         <div class="task-list" id="tasks">
             <!-- Task items will be dynamically added here -->
         </div>
-        <button id="add-task">Add Task</button>
-        <button id="simulate">Simulate</button>
     </div>
 
     <div id="bottom">

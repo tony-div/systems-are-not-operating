@@ -1,209 +1,238 @@
-    /* General Reset */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+/* General Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-      /* Image Section */
-    .image-section {
-      flex-grow: 1;
-      position: relative;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 40px;
-    }
+/* Body Styling */
+body {
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  color: white;
+}
 
-    .image-section h1 {
-      font-size: 3rem;
-      font-weight: bold;
-      background: rgba(0, 0, 0, 0.5); /* Semi-transparent background for text */
-      padding: 1rem 2rem;
-      border-radius: 8px;
-    }
-      
-    body {
-      font-family: Tahoma, Arial, sans-serif; /* Updated font family */
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh; /* Ensure the body takes up the full height of the viewport */
-      background: linear-gradient(to right, #8f94fb, #4e54c8);
-      background-size: cover;
-      color: white;
-      justify-content: space-between; /* This ensures the footer stays at the bottom */
-    }
-      
-      /* Navigation Bar */
-    nav {
-      background: linear-gradient(to right, #8f94fb, #4e54c8);
-      padding: 1rem;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-    }
-      
-    nav a {
-      color: #fff;
-      text-decoration: none;
-      margin: 0 1rem;
-      font-weight: bold;
-      transition: color 0.3s;
-    }
+/* Navigation Bar */
+nav {
+  background: linear-gradient(to right, #8f94fb, #4e54c8);
+  padding: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+}
 
-    nav a:hover {
-      color: #ffccff; /* Light pink hover color */
-    }
+nav a {
+  color: #fff;
+  text-decoration: none;
+  margin: 0 1rem;
+  font-weight: bold;
+  transition: color 0.3s;
+}
 
-      /* Loan Prediction Form */
-    .loan-prediction-form {
-      background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent background for form */
-      padding: 20px;
-      margin: 20px auto;
-      border-radius: 10px;
-      max-width: 500px;
-      width: 100%;
-      position: relative;
-      margin-top: 0vh;
-      margin-bottom: 4vh;
-      display: flex;
-      flex-direction: column;
-      gap: 15px; /* Space between form groups */
-    }
+nav a:hover {
+  color: #ffccff; /* Light pink hover color */
+}
 
+/* Main Layout */
+#top {
+  flex: 1;
+  background-color: #a1a1a1;
+  padding: 20px;
+  border-bottom: 2px solid #ccc;
+  overflow-y: auto;
+}
 
-    .loan-prediction-form .form-group {
-      display: flex;
-      flex-wrap: nowrap; /* Prevent wrapping */
-      align-items: center; /* Align vertically */
-      gap: 15px; /* Spacing between items */
-    }
+#bottom {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+}
 
+#bottom-top {
+  flex: 1;
+  background-color: #707070;
+  padding: 20px;
+  border-bottom: 2px solid #ccc;
+}
 
-    .loan-prediction-form .form-group label {
-      flex: 0 0 150px; /* Fixed width for labels */
-      font-size: 1rem;
-      margin-right: 10px;
-      text-align: left; /* Ensure text alignment */
-    }
-        
-    .loan-prediction-form .form-group input {
-      flex: 7;
-      padding: 8px;
-      font-size: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-    
-    .loan-prediction-form .form-group span {
-      color: #ccc;
-      font-size: 0.85rem;
-      margin-top: 5px;
-    }
+/* Bottom Half (Split into two side-by-side sections) */
+#bottom-bottom {
+  display: flex;
+  justify-content: space-between; /* Ensure space between the divs */
+  gap: 0; /* Explicitly set the gap to 0 */
+}
 
-    input::placeholder {
-      color: #999999; /* Light gray color for ghostly effect */
-      font-style: italic; /* Optional: gives it a softer, ghostly feel */
-      opacity: 1; /* Ensures placeholder text is fully visible */
-      font-size: 0.8em; /* Smaller text size */
-    }
+#bottom-bottom > div {
+  flex: 1;
+  padding: 20px;
+  border-right: 2px solid #ccc;
+  background-color: #8a8a8a;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
-    .loan-prediction-form button {
-      margin-top: 10px;
-      margin-bottom: 10px;
-      padding: 10px;
-      background-color: #4e54c8;
-      color: white;
-      border: none;
-      cursor: pointer;
-      width: 100%;
-      font-size: 1rem;
-    }
+#bottom-bottom > div:last-child {
+  border-right: none; /* Remove border from the last column */
+}
 
-    .loan-prediction-form .form-group .radio-group span {
-      margin-right: 0; /* Reset margin for better alignment */
-      display: flex;
-      align-items: center;
-    }
+/* Table Styling */
+#task-times {
+  width: 100%; /* Make sure the table spans the full width of its container */
+  border-collapse: collapse;
+}
 
-    .loan-prediction-form .form-group .radio-group span:last-child {
-      margin-right: 0; /* Avoid extra margin on the last item */
-    }
-    
-    .loan-prediction-form .form-group input[type="radio"] {
-      margin-right: 5px; /* Space between the button and label text */
-    }
+#task-times th, #task-times td {
+  padding: 10px;
+  text-align: center;
+  border: 1px solid #ccc;
+}
 
-    .loan-prediction-form button:hover {
-      background-color: #8f94fb;
-    }
+#task-times th {
+  background-color: #4e54c8;
+  color: white;
+}
 
-    /* Footer */
-    footer {
-      background: linear-gradient(to right, #4e54c8, #8f94fb);
-      color: #fff;
-      text-align: center;
-      padding: 1rem;
-      box-shadow: 0px -4px 8px rgba(0, 0, 0, 0.2);
-      margin-top: 15px; /* Pushes footer to the bottom of the page */
-    }
+/* Footer Styling */
+footer {
+  background: linear-gradient(to right, #4e54c8, #8f94fb);
+  color: #fff;
+  text-align: center;
+  padding: 1rem;
+  box-shadow: 0px -4px 8px rgba(0, 0, 0, 0.2);
+}
 
+/* Image Section */
+.image-section {
+  flex-grow: 1;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+}
 
-    footer p {
-      font-size: 1rem;
-    }
+.image-section h1 {
+  font-size: 3rem;
+  font-weight: bold;
+  background: rgba(0, 0, 0, 0.5); /* Semi-transparent background for text */
+  padding: 1rem 2rem;
+  border-radius: 8px;
+}
 
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-        }
+/* Input Placeholder */
+input::placeholder {
+  color: #999999; /* Light gray color for ghostly effect */
+  font-style: italic; /* Optional: gives it a softer, ghostly feel */
+  opacity: 1; /* Ensures placeholder text is fully visible */
+  font-size: 0.8em; /* Smaller text size */
+}
 
-        /* Top container for tasks */
-        #top {
-            flex: 1;
-            background-color: #a1a1a1;
-            padding: 20px;
-            border-bottom: 2px solid #ccc;
-            overflow-y: auto;
-        }
+/* Task Input Section */
+.task-inputs {
+  margin-right: 10px; /* Space between tasks */
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+}
 
-        /* Bottom container */
-        #bottom {
-            flex: 2;
-            display: flex;
-            flex-direction: column;
-        }
+.task-inputs input {
+  margin: 5px;
+}
 
-        /* Top half of bottom container */
-        #bottom-top {
-            flex: 1;
-            background-color: #707070;
-            padding: 20px;
-            border-bottom: 2px solid #ccc;
-        }
+.delete-button {
+  margin-top: 5px;
+}
 
-        /* Bottom half split into two side-by-side */
-        #bottom-bottom {
-            flex: 1;
-            display: flex;
-        }
+/* Task List and Visualization */
+.task-list {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding: 10px;
+  margin-bottom: 20px;
+}
 
-        #bottom-bottom > div {
-            flex: 1;
-            padding: 20px;
-            border-right: 2px solid #ccc;
-            background-color: #8a8a8a;
-        }
+/* Timeline Visualization */
+#visualization {
+  display: flex;
+  margin-top: 20px;
+  height: 50px;
+  border: 1px solid #ccc;
+  position: relative;
+  background-color: #f9f9f9;
+  width: 80%; /* Set width to fit around the bar */
+  max-width: 100%; /* Prevent from stretching too wide */
+  margin: 0 auto; /* Center the visualization if needed */
+}
 
-        #bottom-bottom > div:last-child {
-            border-right: none; /* Remove border from the last column */
-        }
-      
-      
+/* Task Interval */
+.task-interval {
+  height: 100%;
+  text-align: center;
+  line-height: 50px;
+  font-size: 12px;
+  overflow: hidden;
+  white-space: nowrap;
+  position: absolute;
+  background-color: #27c42d;
+  color: white;
+  box-sizing: border-box;
+  border-right: 1px solid #000;
+  width: auto; /* Adjust width based on task length */
+}
+
+/* Bottom Layout */
+#bottom {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Bottom Top Section */
+#bottom-top {
+  flex-shrink: 0; /* Prevents shrinking and keeps its content size */
+  padding: 20px;  /* Adjust padding if necessary */
+  background-color: #707070;
+}
+
+#bottom-bottom {
+  flex-grow: 1;  /* Take remaining space */
+  display: flex;
+  justify-content: space-between;
+}
+
+#bottom-bottom > div {
+  flex: 1; /* Take equal space for both columns */
+}
+
+/* Center the table inside the left part of bottom-bottom */
+#task-times {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 auto; /* Center the table */
+}
+
+#task-times th, #task-times td {
+  padding: 8px;
+  text-align: center;
+  border: 1px solid #ccc;
+}
+
+#task-times th {
+  background-color: #f2f2f2;
+  color:  rgb(59, 59, 59);
+}
+
+#average-times {
+  text-align: center;
+  padding: 10px;
+  border: 1px solid #ccc;
+  margin-top: 20px;
+}
