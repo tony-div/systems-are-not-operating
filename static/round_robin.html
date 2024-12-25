@@ -3,17 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Round Robin</title>
+    <title>Round Robin Scheduling</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        #visualization {
+            display: flex;
+            margin-top: 20px;
+            height: 50px;
+            border: 1px solid #ccc;
+            position: relative;
+            background-color: #f9f9f9;
+        }
+
+        .task-interval {
+            height: 100%;
+            text-align: center;
+            line-height: 50px;
+            font-size: 12px;
+            overflow: hidden;
+            white-space: nowrap;
+            position: absolute;
+            background-color: #4CAF50;
+            color: white;
+            box-sizing: border-box;
+            border-right: 1px solid #000; /* Border between tasks */
+        }
+
+        .task-inputs {
+            margin-bottom: 10px;
+        }
+
+        .delete-button {
+            margin-left: 10px;
+        }
+
+        #time-quanta-input {
+            margin: 10px 0;
+        }
+    </style>
 </head>
 <body>
     <div id="header-container"></div>
+
     <div id="top">
-        <h2>Task List</h2>
-        <div>
-            <label for="time-quanta">Time Quanta:</label>
-            <input type="number" id="time-quanta" min="1" value="1">
+        <h2>Process List</h2>
+        <div id="time-quanta-input">
+            <label for="time-quanta">Time Quanta: </label>
+            <input type="number" id="time-quanta" value="4">
         </div>
+        
         <div class="task-list" id="tasks">
             <!-- Task items will be dynamically added here -->
         </div>
@@ -23,58 +61,83 @@
 
     <div id="bottom">
         <div id="bottom-top">
-            <h3>Bottom Top</h3>
-            <p>Content for the top part of the bottom section.</p>
+            <h3>Timeline Visualization</h3>
+            <div id="visualization">
+                <!-- Task intervals will be drawn here -->
+            </div>
         </div>
         <div id="bottom-bottom">
             <div>
-                <h3>Bottom Left</h3>
-                <p>Content for the left side of the bottom section.</p>
+                <h3>Process Times</h3>
+                <table id="task-times">
+                    <thead>
+                        <tr>
+                            <th>Task ID</th>
+                            <th>Wait Time</th>
+                            <th>Response Time</th>
+                            <th>Turnaround Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Task times will be dynamically added here -->
+                    </tbody>
+                </table>
             </div>
             <div>
-                <h3>Bottom Right</h3>
-                <p>Content for the right side of the bottom section.</p>
+                <div id="average-times">
+                    <h3>Average Times</h3>
+                    <p>Average Wait Time: <span id="avg-wait-time">0</span></p>
+                    <p>Average Response Time: <span id="avg-response-time">0</span></p>
+                    <p>Average Turnaround Time: <span id="avg-turnaround-time">0</span></p>
+                </div>
             </div>
         </div>
     </div>
-
 
     <script>
         const tasksContainer = document.getElementById("tasks");
         const addTaskButton = document.getElementById("add-task");
         const simulateButton = document.getElementById("simulate");
+        const visualizationContainer = document.getElementById("visualization");
+        const taskTimesTableBody = document.getElementById("task-times").querySelector("tbody");
+        const avgWaitTimeElement = document.getElementById("avg-wait-time");
+        const avgResponseTimeElement = document.getElementById("avg-response-time");
+        const avgTurnaroundTimeElement = document.getElementById("avg-turnaround-time");
+        const timeQuantaInput = document.getElementById("time-quanta");
 
-        let taskId = 1; // Auto-increment task ID
+        let taskId = 1;
 
-        // Function to add a new task
+        // Function to add a new task input form
         addTaskButton.addEventListener("click", () => {
             const taskDiv = document.createElement("div");
-            taskDiv.className = "task";
+            taskDiv.className = "task-inputs";
 
-            // ID Input
+            // Task ID (Editable)
             const idInput = document.createElement("input");
-            idInput.type = "number";
-            idInput.placeholder = "ID";
-            idInput.value = taskId++; // Auto-fill ID
+            idInput.type = "text";
+            idInput.value = taskId; // Initial value based on current taskId
+            taskId++; // Increment the taskId for the next task
 
             // Burst Time Input
             const burstTimeInput = document.createElement("input");
             burstTimeInput.type = "number";
             burstTimeInput.placeholder = "Burst Time";
 
-            // Arrival Time Input
+            // Arrival Time Input (defaults to 0)
             const arrivalTimeInput = document.createElement("input");
             arrivalTimeInput.type = "number";
             arrivalTimeInput.placeholder = "Arrival Time";
+            arrivalTimeInput.value = 0;  // Default value set to 0
 
             // Delete Button
             const deleteButton = document.createElement("button");
             deleteButton.textContent = "Delete";
+            deleteButton.classList.add("delete-button");
             deleteButton.addEventListener("click", () => {
                 tasksContainer.removeChild(taskDiv);
             });
 
-            // Append inputs and button to taskDiv
+            // Append inputs and delete button to taskDiv
             taskDiv.appendChild(idInput);
             taskDiv.appendChild(burstTimeInput);
             taskDiv.appendChild(arrivalTimeInput);
@@ -85,20 +148,103 @@
         });
 
         // Simulate button click event
-        simulateButton.addEventListener("click", () => {
-            const timeQuanta = document.getElementById("time-quanta").value;
-            const tasks = Array.from(document.querySelectorAll(".task")).map(task => ({
-                id: parseInt(task.children[0].value),
-                burst_time: parseInt(task.children[1].value),
-                arrival_time: parseInt(task.children[2].value)
-            }));
+        simulateButton.addEventListener("click", async () => {
+            const tasks = Array.from(tasksContainer.children).map((taskDiv) => {
+                const inputs = taskDiv.querySelectorAll("input");
+                const [idInput, burstTimeInput, arrivalTimeInput] = inputs;
+                return {
+                    id: parseInt(idInput.value),
+                    burst_time: parseInt(burstTimeInput.value),
+                    arrival_time: parseInt(arrivalTimeInput.value),
+                };
+            });
 
-            console.log("Time Quanta:", timeQuanta);
-            console.log("Tasks:", tasks);
-            // You can now use the tasks array and time_quanta for further processing
+            const timeQuanta = parseInt(timeQuantaInput.value);
+
+            const response = await fetch("/api/simulate/round-robin", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ processes: tasks, time_quanta: timeQuanta }),
+            });
+
+            const data = await response.json();
+
+            console.log("Backend response data:", data);
+
+            if (!data || !data.chart) {
+                console.error("Invalid data from backend:", data);
+                return;
+            }
+
+            // Draw the visualization
+            drawVisualization(data.chart);
+
+            // Update task times in the table
+            updateTaskTimes(data);
+
+            // Update average times
+            updateAverageTimes(data);
         });
-    </script>
 
+        // Function to draw the timeline visualization
+        function drawVisualization(chart) {
+            visualizationContainer.innerHTML = ""; // Clear previous visualization
+
+            if (chart.length === 0) {
+                return; // No data to visualize
+            }
+
+            // Get the total time based on the last task's finish time
+            const totalTime = chart[chart.length - 1].interval[1];
+
+            chart.forEach((task) => {
+                const intervalWidth = ((task.interval[1] - task.interval[0]) / totalTime) * 100;
+                const intervalLeft = (task.interval[0] / totalTime) * 100;
+
+                const taskDiv = document.createElement("div");
+                taskDiv.className = "task-interval";
+                taskDiv.style.width = `${intervalWidth}%`;
+                taskDiv.style.left = `${intervalLeft}%`;
+                taskDiv.textContent = `${task.name} (${task.interval[0]} - ${task.interval[1]})`;
+
+                visualizationContainer.appendChild(taskDiv);
+            });
+        }
+
+        // Function to calculate and update task times in the table
+        function updateTaskTimes(data) {
+            taskTimesTableBody.innerHTML = ""; // Clear existing times
+
+            if (!data.processes || data.processes.length === 0) {
+                console.error("No processes data available.");
+                return;
+            }
+
+            data.processes.forEach((taskId, index) => {
+                const waitTime = data.waiting_time[index];
+                const turnaroundTime = data.turnaround_time[index];
+                const responseTime = data.response_time[index];
+
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${taskId}</td>
+                    <td>${waitTime}</td>
+                    <td>${responseTime}</td>
+                    <td>${turnaroundTime}</td>
+                `;
+                taskTimesTableBody.appendChild(row);
+            });
+        }
+
+        // Function to update the average times
+        function updateAverageTimes(data) {
+            avgWaitTimeElement.textContent = data.avg_waiting_time;
+            avgResponseTimeElement.textContent = data.avg_response_time;
+            avgTurnaroundTimeElement.textContent = data.avg_turnaround_time;
+        }
+    </script>
     <script src="script.js"></script>
 </body>
 </html>
