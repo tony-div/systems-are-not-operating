@@ -121,6 +121,26 @@
             });
         }
 
+        // Function to handle task updates dynamically
+        function handleTasks() {
+            const processes = [];
+            const taskInputs = tasksContainer.querySelectorAll(".task-inputs");
+
+            taskInputs.forEach(taskDiv => {
+                const inputs = taskDiv.querySelectorAll("input");
+                const id = parseInt(inputs[0].value);
+                const burstTime = parseInt(inputs[1].value);
+                const arrivalTime = parseInt(inputs[2].value);
+
+                // Ensure we don't add tasks with missing or invalid values
+                if (isNaN(burstTime) || isNaN(arrivalTime)) return;
+
+                processes.push({ id, burst_time: burstTime, arrival_time: arrivalTime });
+            });
+
+            return processes;
+        }
+
         // Function to calculate and update task times in the table
         function updateTaskTimes(chart) {
             taskTimesTableBody.innerHTML = "";
@@ -129,7 +149,8 @@
             let totalResponseTime = 0;
             let totalTurnaroundTime = 0;
 
-            chart.forEach(task => {
+            // Make sure we calculate the times for the correct chart (which should be the final processed order)
+            chart.forEach((task, index) => {
                 const waitTime = task.startTime - task.arrivalTime;
                 const turnaroundTime = task.finishTime - task.arrivalTime;
                 const responseTime = task.startTime - task.arrivalTime;
@@ -138,9 +159,10 @@
                 totalResponseTime += responseTime;
                 totalTurnaroundTime += turnaroundTime;
 
+                // Update the table with calculated times for each task
                 const row = document.createElement("tr");
                 row.innerHTML = `
-                    <td>${task.name}</td>
+                    <td>${task.id}</td>
                     <td>${waitTime}</td>
                     <td>${responseTime}</td>
                     <td>${turnaroundTime}</td>
@@ -148,6 +170,7 @@
                 taskTimesTableBody.appendChild(row);
             });
 
+            // Calculate averages
             const numTasks = chart.length;
             avgWaitTimeSpan.textContent = (totalWaitTime / numTasks).toFixed(2);
             avgResponseTimeSpan.textContent = (totalResponseTime / numTasks).toFixed(2);
@@ -156,17 +179,7 @@
 
         // Function to handle simulation
         simulateButton.addEventListener("click", async () => {
-            const processes = [];
-            const taskInputs = tasksContainer.querySelectorAll(".task-inputs");
-
-            taskInputs.forEach(task => {
-                const inputs = task.querySelectorAll("input");
-                const id = parseInt(inputs[0].value);
-                const burstTime = parseInt(inputs[1].value);
-                const arrivalTime = parseInt(inputs[2].value);
-
-                processes.push({ id, burst_time: burstTime, arrival_time: arrivalTime });
-            });
+            const processes = handleTasks();  // Get current processes based on user input
 
             try {
                 const response = await fetch("/api/simulate/sjf/preemptive", {
@@ -178,6 +191,11 @@
                 if (!response.ok) throw new Error("Failed to simulate");
 
                 const result = await response.json();
+
+                // Log the response to inspect the results
+                console.log("Backend Response:", result);
+
+                // Draw the visualization and update task times
                 drawVisualization(result.chart);
                 updateTaskTimes(result.chart);
             } catch (error) {
