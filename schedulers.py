@@ -9,8 +9,7 @@ class Schedulers:
         case "fcfs":
             return Schedulers.fcfs(processes_list)
         case "round_robin":
-            return "not implemented yet"
-            # return round_robin(processes_list, time_quanta)
+            return Schedulers.round_robin(processes_list, time_quanta)
         case "Priority_Non_Preemptive":
             return "not implemented yet"
             # return priority(processes_list)
@@ -178,3 +177,96 @@ class Schedulers:
             "avg_waiting_time":avg_wt,
             "avg_response_time":avg_rt
             }
+  
+  def round_robin(process_list, time_quanta):
+    t = 0
+    gantt = []
+    completed = {}
+    first_response = {}  # To track the response time
+
+    # Sort processes by arrival time
+    def sort_by_AT(process):
+      return process[0]
+    process_list.sort(key=sort_by_AT) 
+    burst_times = {}
+    for p in process_list:
+        process_id = p[2]
+        burst_time = p[1]
+        burst_times[process_id] = burst_time
+
+    while process_list:
+        available = [p for p in process_list if p[0] <= t]
+
+        # Boundary condition: If no process is available, CPU is idle
+        if not available:
+            gantt.append("Idle")
+            t += 1
+            continue
+
+        # Service the first available process
+        process = available[0]
+        process_list.remove(process)
+
+        # Log the response time for the first execution
+        if process[2] not in first_response:
+            first_response[process[2]] = t - process[0]
+        remaining_burst = process[1]
+
+        if remaining_burst <= time_quanta:
+            gantt.append({"name": str(process[2]), "interval": [t, t+remaining_burst]})
+            t += remaining_burst
+            ct = t  # Completion time
+            process_id = process[2]
+            arrival_time = process[0]
+            burst_time = burst_times[process_id]
+            tt = ct - arrival_time  # Turnaround Time
+            wt = tt - burst_time   # Waiting Time
+            rt = first_response[process_id]  # Response Time
+            completed[process[2]] = [ct, tt, wt, rt]
+        else:
+            gantt.append({"name": str(process[2]), "interval": [t, t+time_quanta]})
+            t += time_quanta
+            process[1] -= time_quanta
+            process_list.append(process)
+
+    # # Calculate and display results
+    # print("\nGantt Chart:")
+    # print(" -> ".join(gantt))
+    PID_arr=[]
+    CT_arr=[]
+    TT_arr=[]
+    WT_arr=[]
+    RT_arr=[]
+
+    # print("\nProcess Details:")
+    # print("Process\tCT\tTAT\tWT\tRT")
+    total_tt = total_wt = total_rt = 0
+    for process_id, values in completed.items():
+        ct, tt, wt, rt = values
+        total_tt += tt
+        total_wt += wt
+        total_rt += rt
+        # print(f"{process_id}\t{ct}\t{tt}\t{wt}\t{rt}")
+        PID_arr.append(process_id)
+        CT_arr.append(ct)
+        TT_arr.append(tt)
+        WT_arr.append(wt)
+        RT_arr.append(rt)
+
+
+    # Display averages
+    n = len(completed)
+    # print("\nAverages:")
+    # print(f"Average Turnaround Time: {total_tt / n:.2f}")
+    # print(f"Average Waiting Time: {total_wt / n:.2f}")
+    # print(f"Average Response Time: {total_rt / n:.2f}")
+    # print("******************")
+    return{"chart":gantt,
+          "processes":PID_arr,
+          "turnaround_time":TT_arr,
+          "waiting_time":WT_arr,
+          "response_time":RT_arr,
+          "avg_turnaround_time":total_tt / n ,
+          "avg_waiting_time": total_wt / n,
+          "avg_response_time": total_rt / n,
+          "context_switches": len(gantt) - 1}

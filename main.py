@@ -12,7 +12,7 @@ class Process(BaseModel):
 
 class ProcessList(BaseModel):
   processes: List[Process]
-  time_quanta: int | None = 0
+  time_quanta: int | None = 99999999999
 
 app = FastAPI()
 
@@ -51,7 +51,13 @@ def fcfs(processes: ProcessList):
 
 @app.post("/api/simulate/round-robin")
 def round_robin(processes: ProcessList):
-  return {"status": "not implemented yet"}
+  if processes.time_quanta <= 0:
+    processes.time_quanta = 99999999999
+  process_list = []
+  for process in processes.processes:
+    process_list.append([process.arrival_time, process.burst_time, process.id])
+  results = Schedulers.simulate(algo_name="round_robin", processes_list=process_list, time_quanta=processes.time_quanta)
+  return results
 
 @app.post("/api/simulate/priority/non-preemptive")
 def priority_non_preemptive(processes: ProcessList):
