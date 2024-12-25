@@ -6,6 +6,8 @@ class Schedulers:
     match algo_name:
         case "SJF_non_preemptive":
             return Schedulers.SJF_non_preemptive(processes_list)
+        case "preemptive_sjf" :
+            return Schedulers.preemptive_sjf(processes_list)
         case "fcfs":
             return Schedulers.fcfs(processes_list)
         case "round_robin":
@@ -88,6 +90,97 @@ class Schedulers:
             "avg_response_time": sum(WT) / len(WT)
             }
   
+  def preemptive_sjf(process_list):
+    t = 0
+    completed = {}
+    gantt = []
+    ready_queue = []
+
+    # Sort processes by arrival time
+    process_list.sort()
+
+    # Clone burst times for tracking remaining burst times
+    remaining_burst = {p[2]: p[1] for p in process_list}
+    first_response = {}  # To track the response time of each process
+
+    while process_list or ready_queue:
+        # Add processes that have arrived to the ready queue
+        while process_list and process_list[0][0] <= t:
+            ready_queue.append(process_list.pop(0))
+
+        # If ready queue is empty, CPU is idle
+        if not ready_queue:
+            gantt.append("Idle")
+            t += 1
+            continue
+
+        # Select the process with the shortest remaining burst time
+        ready_queue.sort(key=lambda x: remaining_burst[x[2]])
+        current_process = ready_queue[0]
+
+        # Log response time if the process starts execution for the first time
+        if current_process[2] not in first_response:
+            first_response[current_process[2]] = t - current_process[0]
+
+        if len(gantt) > 0 and gantt[-1]["name"] == str(current_process[2]):
+          gantt[-1]["interval"][1] = t+1
+        else:
+          gantt.append({"name": str(current_process[2]), "interval":[t, t+1]})
+        # Execute the process for 1 unit of time
+        remaining_burst[current_process[2]] -= 1
+        t += 1
+
+        # If the process is completed
+        if remaining_burst[current_process[2]] == 0:
+            ready_queue.pop(0)
+            ct = t  # Completion time
+            at = current_process[0]  # Arrival time
+            bt = current_process[1]  # Original burst time
+            tt = ct - at  # Turnaround Time
+            wt = tt - bt  # Waiting Time
+            rt = first_response[current_process[2]]  # Response Time
+            completed[current_process[2]] = [ct, tt, wt, rt]
+
+    # Calculate and display results
+    # print("\nGantt Chart:")
+    # print(" -> ".join(gantt))
+
+    PID_arr=[]
+    CT_arr=[]
+    TT_arr=[]
+    WT_arr=[]
+    RT_arr=[]
+
+    # print("\nProcess Details:")
+    # print("Process\tCT\tTAT\tWT\tRT")
+    total_tt = total_wt = total_rt = 0
+    for process_id, values in completed.items():
+        ct, tt, wt, rt = values
+        total_tt += tt
+        total_wt += wt
+        total_rt += rt
+        # print(f"{process_id}\t{ct}\t{tt}\t{wt}\t{rt}")
+        PID_arr.append(process_id)
+        CT_arr.append(ct)
+        TT_arr.append(tt)
+        WT_arr.append(wt)
+        RT_arr.append(rt)
+
+    # Display averages
+    n = len(completed)
+    # print("\nAverages:")
+    # print(f"Average Turnaround Time: {total_tt / n:.2f}")
+    # print(f"Average Waiting Time: {total_wt / n:.2f}")
+    # print(f"Average Response Time: {total_rt / n:.2f}")
+    return{"chart":gantt,
+          "processes":PID_arr,
+          "turnaround_time":TT_arr,
+          "waiting_time":WT_arr,
+          "response_time":RT_arr,
+          "avg_turnaround_time":total_tt / n ,
+          "avg_waiting_time": total_wt / n,
+          "avg_response_time": total_rt / n}
+
   def fcfs(process_list):
     # Initialize the current time, Gantt chart, and dictionaries for completed processes
     t = 0  # Current time
