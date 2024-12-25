@@ -38,7 +38,11 @@ def sjf_non_preemptive(processes: ProcessList):
 
 @app.post("/api/simulate/sjf/preemptive")
 def sjf_preemptive(processes: ProcessList):
-  return {"status": "not implemented yet"}
+  process_list = []
+  for process in processes.processes:
+    process_list.append([process.arrival_time, process.burst_time, process.id])
+  results = Schedulers.simulate(algo_name="preemptive_sjf", processes_list=process_list)
+  return results
 
 @app.post("/api/simulate/fcfs")
   # [arrival time, burst time, proccess id]
