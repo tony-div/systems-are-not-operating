@@ -60,29 +60,34 @@
         const visualizationContainer = document.getElementById("visualization");
         const taskTimesTableBody = document.getElementById("task-times").querySelector("tbody");
 
+        const avgWaitTimeSpan = document.getElementById("avg-wait-time");
+        const avgResponseTimeSpan = document.getElementById("avg-response-time");
+        const avgTurnaroundTimeSpan = document.getElementById("avg-turnaround-time");
+
         let taskId = 1; // Auto-increment task ID
 
         // Function to add a new task
         addTaskButton.addEventListener("click", () => {
             const taskDiv = document.createElement("div");
-            taskDiv.className = "task-inputs"; // Consistent with other files
+            taskDiv.className = "task-inputs";
 
             // ID Input
             const idInput = document.createElement("input");
             idInput.type = "number";
             idInput.placeholder = "ID";
             idInput.value = taskId++;
-            idInput.readOnly = true; // Prevent editing of auto-generated IDs
+            idInput.readOnly = true;
 
             // Burst Time Input
             const burstTimeInput = document.createElement("input");
             burstTimeInput.type = "number";
             burstTimeInput.placeholder = "Burst Time";
 
-            // Arrival Time Input
+            // Arrival Time Input (Defaulted to 0)
             const arrivalTimeInput = document.createElement("input");
             arrivalTimeInput.type = "number";
             arrivalTimeInput.placeholder = "Arrival Time";
+            arrivalTimeInput.value = 0;
 
             // Delete Button
             const deleteButton = document.createElement("button");
@@ -91,27 +96,24 @@
                 tasksContainer.removeChild(taskDiv);
             });
 
-            // Append inputs and button to taskDiv
             taskDiv.appendChild(idInput);
             taskDiv.appendChild(burstTimeInput);
             taskDiv.appendChild(arrivalTimeInput);
             taskDiv.appendChild(deleteButton);
 
-            // Append taskDiv to tasksContainer
             tasksContainer.appendChild(taskDiv);
         });
 
         // Function to draw the timeline visualization
         function drawVisualization(chart) {
-            visualizationContainer.innerHTML = ""; // Clear previous visualization
-            const totalTime = chart[chart.length - 1].interval[1]; // Get the total time
+            visualizationContainer.innerHTML = ""; // Clear visualization
+            const totalTime = chart[chart.length - 1].interval[1];
 
-            chart.forEach((task) => {
-                const intervalWidth = ((task.interval[1] - task.interval[0]) / totalTime) * 100;
-
+            chart.forEach(task => {
+                const width = ((task.interval[1] - task.interval[0]) / totalTime) * 100;
                 const taskDiv = document.createElement("div");
                 taskDiv.className = "task-interval";
-                taskDiv.style.width = `${intervalWidth}%`;
+                taskDiv.style.width = `${width}%`;
                 taskDiv.style.left = `${(task.interval[0] / totalTime) * 100}%`;
                 taskDiv.textContent = `${task.name} (${task.interval[0]} - ${task.interval[1]})`;
 
@@ -119,14 +121,22 @@
             });
         }
 
-        // Function to calculate and update times in the table
+        // Function to calculate and update task times in the table
         function updateTaskTimes(chart) {
-            taskTimesTableBody.innerHTML = ""; // Clear existing times
+            taskTimesTableBody.innerHTML = "";
 
-            chart.forEach((task) => {
-                const waitTime = task.startTime - task.arrivalTime; // Wait Time = Start Time - Arrival Time
-                const turnaroundTime = task.finishTime - task.arrivalTime; // Turnaround Time = Finish Time - Arrival Time
-                const responseTime = task.startTime - task.arrivalTime; // Response Time = Start Time - Arrival Time
+            let totalWaitTime = 0;
+            let totalResponseTime = 0;
+            let totalTurnaroundTime = 0;
+
+            chart.forEach(task => {
+                const waitTime = task.startTime - task.arrivalTime;
+                const turnaroundTime = task.finishTime - task.arrivalTime;
+                const responseTime = task.startTime - task.arrivalTime;
+
+                totalWaitTime += waitTime;
+                totalResponseTime += responseTime;
+                totalTurnaroundTime += turnaroundTime;
 
                 const row = document.createElement("tr");
                 row.innerHTML = `
@@ -137,22 +147,43 @@
                 `;
                 taskTimesTableBody.appendChild(row);
             });
+
+            const numTasks = chart.length;
+            avgWaitTimeSpan.textContent = (totalWaitTime / numTasks).toFixed(2);
+            avgResponseTimeSpan.textContent = (totalResponseTime / numTasks).toFixed(2);
+            avgTurnaroundTimeSpan.textContent = (totalTurnaroundTime / numTasks).toFixed(2);
         }
 
-        // Simulate button click event
+        // Function to handle simulation
         simulateButton.addEventListener("click", async () => {
-            // Simulate fetching data from an API
-            const response = {
-                chart: [
-                    { name: "1", interval: [0, 1], startTime: 0, finishTime: 1, arrivalTime: 0 },
-                    { name: "2", interval: [1, 5], startTime: 1, finishTime: 5, arrivalTime: 1 },
-                    { name: "3", interval: [5, 12], startTime: 5, finishTime: 12, arrivalTime: 5 },
-                    { name: "4", interval: [12, 14], startTime: 12, finishTime: 14, arrivalTime: 12 }
-                ]
-            };
+            const processes = [];
+            const taskInputs = tasksContainer.querySelectorAll(".task-inputs");
 
-            drawVisualization(response.chart);
-            updateTaskTimes(response.chart);
+            taskInputs.forEach(task => {
+                const inputs = task.querySelectorAll("input");
+                const id = parseInt(inputs[0].value);
+                const burstTime = parseInt(inputs[1].value);
+                const arrivalTime = parseInt(inputs[2].value);
+
+                processes.push({ id, burst_time: burstTime, arrival_time: arrivalTime });
+            });
+
+            try {
+                const response = await fetch("/api/simulate/sjf/preemptive", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ processes })
+                });
+
+                if (!response.ok) throw new Error("Failed to simulate");
+
+                const result = await response.json();
+                drawVisualization(result.chart);
+                updateTaskTimes(result.chart);
+            } catch (error) {
+                console.error("Error:", error);
+                alert("An error occurred during simulation.");
+            }
         });
     </script>
     <script src="script.js"></script>
