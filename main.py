@@ -69,4 +69,8 @@ def priority_non_preemptive(processes: ProcessList):
 
 @app.post("/api/simulate/priority/preemptive")
 def priority_preemptive(processes: ProcessList):
-  return {"status": "not implemented yet"}
+  process_list = []
+  for process in processes.processes:
+    process_list.append([process.arrival_time, process.burst_time, process.id, process.priority])
+  results = Schedulers.simulate(algo_name="priority_preemptive", processes_list=process_list)
+  return results

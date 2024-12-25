@@ -13,8 +13,7 @@ class Schedulers:
         case "Priority_Non_Preemptive":
             return Schedulers.priority(processes_list)
         case "priority_preemptive" :
-            return "not implemented yet"
-            # return priority_preemptive(processes_list)
+            return Schedulers.priority_preemptive(processes_list)
         case _:
             return "invalid input"
   
@@ -332,8 +331,8 @@ class Schedulers:
     RT_arr=[]
 
     # Print Process Details
-    print("\nPriority Non-Preemptive Process Details:")
-    print("Process\tPri\tAT\tBT\tCT\tTAT\tWT\tRT")
+    # print("\nPriority Non-Preemptive Process Details:")
+    # print("Process\tPri\tAT\tBT\tCT\tTAT\tWT\tRT")
 
     total_tat = 0  # Total Turnaround Time
     total_wt = 0  # Total Waiting Time
@@ -346,7 +345,7 @@ class Schedulers:
         total_tat += tat  # Accumulate Turnaround Time
         total_wt += wt  # Accumulate Waiting Time
         total_rt += rt  # Accumulate Response Time
-        print(f"{pid}\t{priority_value}\t{arrival_time}\t{burst_time}\t{ct}\t{tat}\t{wt}\t{rt}")
+        # print(f"{pid}\t{priority_value}\t{arrival_time}\t{burst_time}\t{ct}\t{tat}\t{wt}\t{rt}")
         PID_arr.append(pid)
         PRI_arr.append(priority_value)
         AT_arr.append(arrival_time)
@@ -366,6 +365,118 @@ class Schedulers:
     print(f"Average Turnaround Time: {avg_tat:.2f}")
     print(f"Average Waiting Time: {avg_wt:.2f}")
     print(f"Average Response Time: {avg_rt:.2f}")
+    return{"chart" :gantt,
+            "processes":PID_arr,
+            "priorities":PRI_arr,
+            "turnaround_time":TAT_arr,
+            "waiting_time":WT_arr,
+            "response_time":RT_arr,
+            "avg_turnaround_time":avg_tat,
+            "avg_waiting_time":avg_wt,
+            "avg_response_time":avg_rt}
+  
+  def priority_preemptive(process_list):
+    # [AT, BT, PID, Priority]
+    # If no arrival time is provided, set all arrival times to 0
+    for process in process_list:
+        if len(process) == 3:  # If only 3 elements (AT, BT, PID) are provided
+            process.insert(0, 0)  # Set Arrival Time (AT) to 0 at the beginning
+
+        if len(process) == 4:
+            process.insert(4, -1)  # Add placeholder for Start Time (ST) if missing
+
+    t = 0  # Current time
+    gantt = []  # To store the Gantt chart representation of process execution
+    completed = {}  # Dictionary to store completion details of each process
+    response_times = {}  # Dictionary to store response times of processes
+
+    original_bt = {p[2]: p[1] for p in process_list}  # Store original burst times
+
+    while process_list:
+        # Filter processes that have arrived
+        available = [p for p in process_list if p[0] <= t]
+
+        if not available:
+            # If no processes are available, the CPU is idle
+            gantt.append("Idle")
+            t += 1
+            continue
+
+        # Sort by priority, then by arrival time
+        available.sort(key=lambda x: (x[3], x[0]))
+        process = available[0]  # Select the process with the highest priority
+
+        if process[4] == -1:  # Start Time has not been set
+            # Record response time for the first execution
+            response_times[process[2]] = t - process[0]  # Response Time = Start Time - Arrival Time
+            process[4] = t  # Set Start Time (ST)
+
+        if len(gantt) > 0 and gantt[-1]["name"] == str(process[2]):
+          gantt[-1]["interval"][1] = t+1
+        else:
+          gantt.append({"name": str(process[2]), "interval":[t, t+1]})  # Add the process ID to the Gantt chart
+        process[1] -= 1  # Decrease burst time by 1 (executing for 1 time unit)
+        t += 1  # Increment time
+
+        if process[1] == 0:
+            # If the process has completed execution
+            CT = t  # Completion Time
+            AT = process[0]  # Arrival Time
+            BT = original_bt[process[2]]  # Use the original Burst Time
+            ST = process[4]  # Start Time
+            TAT = CT - AT  # Turnaround Time = Completion Time - Arrival Time
+            WT = TAT - BT  # Waiting Time = Turnaround Time - Burst Time
+
+            completed[process[2]] = [process[3], AT, BT, ST, CT, TAT, WT]
+            process_list.remove(process)  # Remove the completed process
+
+    # Print Gantt Chart
+    # print("Gantt Chart:", gantt)
+
+    # Print Process Details
+    # print("\nPriority Preemptive Process Details:")
+    # print("Process\tPri\tAT\tBT\tST\tCT\tTAT\tWT\tRT")
+
+    total_tat = 0  # Total Turnaround Time
+    total_wt = 0  # Total Waiting Time
+    total_rt = 0  # Total Response Time
+    n = len(completed)  # Number of processes
+    PID_arr=[]
+    PRI_arr=[]
+    AT_arr=[]
+    BT_arr=[]
+    ST_arr=[]
+    CT_arr=[]
+    TAT_arr=[]
+    WT_arr=[]
+    RT_arr=[]
+
+    for pid, details in completed.items():
+        priority_value, arrival_time, burst_time, start_time, ct, tat, wt = details
+        rt = response_times[pid]  # Retrieve response time for the process
+        total_tat += tat  # Accumulate Turnaround Time
+        total_wt += wt  # Accumulate Waiting Time
+        total_rt += rt  # Accumulate Response Time
+        # print(f"{pid}\t{priority_value}\t{arrival_time}\t{burst_time}\t{start_time}\t{ct}\t{tat}\t{wt}\t{rt}")
+        PID_arr.append(pid)
+        PRI_arr.append(priority_value)
+        AT_arr.append(arrival_time)
+        BT_arr.append(burst_time)
+        ST_arr.append(start_time)
+        CT_arr.append(ct)
+        TAT_arr.append(tat)
+        WT_arr.append(wt)
+        RT_arr.append(rt)
+
+    # Calculate Averages
+    avg_tat = total_tat / n  # Average Turnaround Time
+    avg_wt = total_wt / n  # Average Waiting Time
+    avg_rt = total_rt / n  # Average Response Time
+
+    # print("\nAverages for Priority Preemptive Scheduling:")
+    # print(f"Average Turnaround Time: {avg_tat:.2f}")
+    # print(f"Average Waiting Time: {avg_wt:.2f}")
+    # print(f"Average Response Time: {avg_rt:.2f}")
     return{"chart" :gantt,
             "processes":PID_arr,
             "priorities":PRI_arr,
