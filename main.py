@@ -28,7 +28,7 @@ def test(processes: ProcessList):
     }
 
 @app.post("/api/simulate/sjf/non-preemptive")
-  # [arrival time, burst time, process id]
+  # [arrival time, burst_time, process_id]
 def sjf_non_preemptive(processes: ProcessList):
   process_list = []
   for process in processes.processes:
@@ -78,3 +78,7 @@ def priority_preemptive(processes: ProcessList):
     process_list.append([process.arrival_time, process.burst_time, process.id, process.priority])
   results = Schedulers.simulate(algo_name="priority_preemptive", processes_list=process_list)
   return results
+
+if __name__ == "__main__":
+  import uvicorn
+  uvicorn.run(app, host="127.0.0.1", port=8000)

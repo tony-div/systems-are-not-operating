@@ -3,6 +3,7 @@ class Schedulers:
   #   self.value = value
 
   def simulate(algo_name: str, processes_list, time_quanta=0):
+    # [arrival time, burst_time, process_id]
     match algo_name:
         case "SJF_non_preemptive":
             return Schedulers.SJF_non_preemptive(processes_list)
